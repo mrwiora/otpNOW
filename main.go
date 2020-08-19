@@ -9,7 +9,6 @@ import (
 	"github.com/pquerna/otp/totp"
 	"image/png"
 	"io"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -34,7 +33,7 @@ func display(key *otp.Key, data []byte) {
 	fmt.Printf("Account Name: %s\n", key.AccountName())
 	fmt.Printf("Secret:       %s\n", key.Secret())
 	fmt.Println("Writing PNG to qr-code.png....")
-	ioutil.WriteFile("qr-code.png", data, 0644)
+	//	ioutil.WriteFile("qr-code.png", data, 0644)
 	fmt.Println("")
 	fmt.Println("Please add your TOTP to your OTP Application now!")
 	fmt.Println("")
@@ -63,11 +62,7 @@ func GeneratePassCode(utf8string string) string {
 	return passcode
 }
 
-func main() {
-	// creating random string
-	rand.Seed(time.Now().UnixNano())
-	var SESSIONID = randSeq(10)
-
+func generateKey() *otp.Key {
 	key, err := totp.Generate(totp.GenerateOpts{
 		Issuer:      "Example.com",
 		AccountName: "alice@example.com",
@@ -75,6 +70,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	return key
+}
+
+func main() {
+
+	// start server
+	key := generateKey()
+
 	// Convert TOTP key into a PNG
 	var buf bytes.Buffer
 	img, err := key.Image(200, 200)
@@ -83,10 +86,12 @@ func main() {
 	}
 	png.Encode(&buf, img)
 
-	// display the QR code to the user.
 	display(key, buf.Bytes())
 
-	validHandlerTOTP := func(passcode string) string {
+	// display the QR code to the user.
+	// display(key, buf.Bytes())
+
+	validHandlerTOTP := func(passcode string, SESSIONID string) string {
 		valid := totp.Validate(passcode, key.Secret())
 		if valid {
 			fmt.Printf("%v validHandlerTOTP: valid \n", SESSIONID)
@@ -99,10 +104,13 @@ func main() {
 
 	// Hello world, the web server
 	verifyHandler := func(w http.ResponseWriter, r *http.Request) {
+		// creating random string
+		rand.Seed(time.Now().UnixNano())
+		var SESSIONID = randSeq(10)
 		// performing external query for working ssh connection
 		passcode := r.URL.Query().Get("passcode")
 		fmt.Printf("%v verifyHandler : passcode is %v \n", SESSIONID, passcode)
-		out := validHandlerTOTP(passcode)
+		out := validHandlerTOTP(passcode, SESSIONID)
 		_ = err
 		io.WriteString(w, string(out))
 	}
