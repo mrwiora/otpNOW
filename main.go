@@ -11,10 +11,23 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"time"
 )
+
+// random string generator
+// thanks https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-go
+var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890@#!?")
+
+func randSeq(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
+}
 
 func display(key *otp.Key, data []byte) {
 	fmt.Printf("Issuer:       %s\n", key.Issuer())
@@ -51,6 +64,10 @@ func GeneratePassCode(utf8string string) string {
 }
 
 func main() {
+	// creating random string
+	rand.Seed(time.Now().UnixNano())
+	var SESSIONID = randSeq(10)
+
 	key, err := totp.Generate(totp.GenerateOpts{
 		Issuer:      "Example.com",
 		AccountName: "alice@example.com",
@@ -69,11 +86,13 @@ func main() {
 	// display the QR code to the user.
 	display(key, buf.Bytes())
 
-	validHandler := func(passcode string) string {
+	validHandlerTOTP := func(passcode string) string {
 		valid := totp.Validate(passcode, key.Secret())
 		if valid {
+			fmt.Printf("%v validHandlerTOTP: valid \n", SESSIONID)
 			return "valid"
 		} else {
+			fmt.Printf("%v validHandlerTOTP: invalid \n", SESSIONID)
 			return "invalid"
 		}
 	}
@@ -82,12 +101,13 @@ func main() {
 	verifyHandler := func(w http.ResponseWriter, r *http.Request) {
 		// performing external query for working ssh connection
 		passcode := r.URL.Query().Get("passcode")
-		out := validHandler(passcode)
+		fmt.Printf("%v verifyHandler : passcode is %v \n", SESSIONID, passcode)
+		out := validHandlerTOTP(passcode)
 		_ = err
 		io.WriteString(w, string(out))
 	}
 
 	http.HandleFunc("/totp", verifyHandler)
 
-	log.Fatal(http.ListenAndServe(":80", nil))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
