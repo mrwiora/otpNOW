@@ -9,6 +9,7 @@ import (
 	"github.com/pquerna/otp/totp"
 	"image/png"
 	"io"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -33,7 +34,7 @@ func display(key *otp.Key, data []byte) {
 	fmt.Printf("Account Name: %s\n", key.AccountName())
 	fmt.Printf("Secret:       %s\n", key.Secret())
 	fmt.Println("Writing PNG to qr-code.png....")
-	//	ioutil.WriteFile("qr-code.png", data, 0644)
+	ioutil.WriteFile("qr-code.png", data, 0644)
 	fmt.Println("")
 	fmt.Println("Please add your TOTP to your OTP Application now!")
 	fmt.Println("")
@@ -73,11 +74,7 @@ func generateKey() *otp.Key {
 	return key
 }
 
-func main() {
-
-	// start server
-	key := generateKey()
-
+func generateQR(key *otp.Key) bytes.Buffer {
 	// Convert TOTP key into a PNG
 	var buf bytes.Buffer
 	img, err := key.Image(200, 200)
@@ -85,22 +82,31 @@ func main() {
 		panic(err)
 	}
 	png.Encode(&buf, img)
+	return buf
+}
 
-	display(key, buf.Bytes())
+func validHandlerTOTP(key *otp.Key, passcode string, SESSIONID string) string {
+	valid := totp.Validate(passcode, key.Secret())
+	if valid {
+		fmt.Printf("%v validHandlerTOTP: valid \n", SESSIONID)
+		return "valid"
+	} else {
+		fmt.Printf("%v validHandlerTOTP: invalid \n", SESSIONID)
+		return "invalid"
+	}
+}
+
+func main() {
+
+	// start server
+	key := generateKey()
+	// generate QR
+	qr := generateQR(key)
+
+	display(key, qr.Bytes())
 
 	// display the QR code to the user.
 	// display(key, buf.Bytes())
-
-	validHandlerTOTP := func(passcode string, SESSIONID string) string {
-		valid := totp.Validate(passcode, key.Secret())
-		if valid {
-			fmt.Printf("%v validHandlerTOTP: valid \n", SESSIONID)
-			return "valid"
-		} else {
-			fmt.Printf("%v validHandlerTOTP: invalid \n", SESSIONID)
-			return "invalid"
-		}
-	}
 
 	// Hello world, the web server
 	verifyHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -110,8 +116,7 @@ func main() {
 		// performing external query for working ssh connection
 		passcode := r.URL.Query().Get("passcode")
 		fmt.Printf("%v verifyHandler : passcode is %v \n", SESSIONID, passcode)
-		out := validHandlerTOTP(passcode, SESSIONID)
-		_ = err
+		out := validHandlerTOTP(key, passcode, SESSIONID)
 		io.WriteString(w, string(out))
 	}
 
