@@ -85,13 +85,13 @@ func generateQR(key *otp.Key) bytes.Buffer {
 	return buf
 }
 
-func validHandlerTOTP(key *otp.Key, passcode string, SESSIONID string) string {
+func keytotpHandler(key *otp.Key, passcode string, SESSIONID string) string {
 	valid := totp.Validate(passcode, key.Secret())
 	if valid {
-		fmt.Printf("%v validHandlerTOTP: valid \n", SESSIONID)
+		fmt.Printf("%v keytotpHandler: valid \n", SESSIONID)
 		return "valid"
 	} else {
-		fmt.Printf("%v validHandlerTOTP: invalid \n", SESSIONID)
+		fmt.Printf("%v keytotpHandler: invalid \n", SESSIONID)
 		return "invalid"
 	}
 }
@@ -105,22 +105,19 @@ func main() {
 
 	display(key, qr.Bytes())
 
-	// display the QR code to the user.
-	// display(key, buf.Bytes())
-
 	// Hello world, the web server
-	verifyHandler := func(w http.ResponseWriter, r *http.Request) {
+	httptotpHandler := func(w http.ResponseWriter, r *http.Request) {
 		// creating random string
 		rand.Seed(time.Now().UnixNano())
 		var SESSIONID = randSeq(10)
 		// performing external query for working ssh connection
 		passcode := r.URL.Query().Get("passcode")
-		fmt.Printf("%v verifyHandler : passcode is %v \n", SESSIONID, passcode)
-		out := validHandlerTOTP(key, passcode, SESSIONID)
+		fmt.Printf("%v httptotpHandler : passcode is %v \n", SESSIONID, passcode)
+		out := keytotpHandler(key, passcode, SESSIONID)
 		io.WriteString(w, string(out))
 	}
 
-	http.HandleFunc("/totp", verifyHandler)
+	http.HandleFunc("/totp", httptotpHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
