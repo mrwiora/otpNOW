@@ -4,11 +4,11 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/base32"
+	"encoding/json"
 	"fmt"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
 	"image/png"
-	"io"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -87,15 +87,19 @@ func generateQR(key *otp.Key) bytes.Buffer {
 	return buf
 }
 
-func keytotpHandler(key *otp.Key, passcode string, SESSIONID string) string {
+func keytotpHandler(key *otp.Key, passcode string, SESSIONID string) bool {
 	valid := totp.Validate(passcode, key.Secret())
 	if valid {
 		fmt.Printf("%v keytotpHandler: valid \n", SESSIONID)
-		return "valid"
+		return true
 	} else {
 		fmt.Printf("%v keytotpHandler: invalid \n", SESSIONID)
-		return "invalid"
+		return false
 	}
+}
+
+type jsonResult struct {
+	Result string
 }
 
 func main() {
@@ -120,6 +124,7 @@ func main() {
 		if _, err := w.Write(qr.Bytes()); err != nil {
 			log.Println("unable to write image.")
 		}
+		w.WriteHeader(200)
 	}
 
 	httptotpHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -132,8 +137,28 @@ func main() {
 		// performing external query for working ssh connection
 		passcode := r.URL.Query().Get("passcode")
 		fmt.Printf("%v httptotpHandler : passcode provided by %v is %v \n", SESSIONID, ip, passcode)
-		out := keytotpHandler(key, passcode, SESSIONID)
-		io.WriteString(w, string(out))
+		if keytotpHandler(key, passcode, SESSIONID) {
+			result := jsonResult{"ok"}
+			js, err := json.Marshal(result)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(200)
+			w.Write(js)
+		} else {
+			result := jsonResult{"not ok"}
+			js, err := json.Marshal(result)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(401)
+			w.Write(js)
+		}
+
 	}
 
 	http.HandleFunc("/", httpserverHandler)
