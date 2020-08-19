@@ -12,8 +12,10 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -106,17 +108,35 @@ func main() {
 	display(key, qr.Bytes())
 
 	// Hello world, the web server
+	httpserverHandler := func(w http.ResponseWriter, r *http.Request) {
+		// obtain requester IP for debugging purposes
+		ip, _, err := net.SplitHostPort(r.RemoteAddr)
+		_ = err
+		// displaying image
+		// thanks https://www.sanarias.com/blog/1214PlayingwithimagesinHTTPresponseingolang
+		fmt.Printf("httpserverHandler : serving QR to %v\n", ip)
+		w.Header().Set("Content-Type", "image/jpeg")
+		w.Header().Set("Content-Length", strconv.Itoa(len(qr.Bytes())))
+		if _, err := w.Write(qr.Bytes()); err != nil {
+			log.Println("unable to write image.")
+		}
+	}
+
 	httptotpHandler := func(w http.ResponseWriter, r *http.Request) {
+		// obtain requester IP for debugging purposes
+		ip, _, err := net.SplitHostPort(r.RemoteAddr)
+		_ = err
 		// creating random string
 		rand.Seed(time.Now().UnixNano())
 		var SESSIONID = randSeq(10)
 		// performing external query for working ssh connection
 		passcode := r.URL.Query().Get("passcode")
-		fmt.Printf("%v httptotpHandler : passcode is %v \n", SESSIONID, passcode)
+		fmt.Printf("%v httptotpHandler : passcode provided by %v is %v \n", SESSIONID, ip, passcode)
 		out := keytotpHandler(key, passcode, SESSIONID)
 		io.WriteString(w, string(out))
 	}
 
+	http.HandleFunc("/", httpserverHandler)
 	http.HandleFunc("/totp", httptotpHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
