@@ -79,7 +79,7 @@ func main() {
 	}
 
 	// Hello world, the web server
-	helloHandler := func(w http.ResponseWriter, r *http.Request) {
+	verifyHandler := func(w http.ResponseWriter, r *http.Request) {
 		// performing external query for working ssh connection
 		passcode := r.URL.Query().Get("passcode")
 		out := validHandler(passcode)
@@ -87,19 +87,7 @@ func main() {
 		io.WriteString(w, string(out))
 	}
 
-	http.HandleFunc("/totp", helloHandler)
+	http.HandleFunc("/totp", verifyHandler)
 
-	log.Fatal(http.ListenAndServe(":8888", nil))
-
-	//// Now Validate that the user's successfully added the passcode.
-	//fmt.Println("Validating TOTP...")
-	//passcode := promptForPasscode()
-	//valid := totp.Validate(passcode, key.Secret())
-	//if valid {
-	//	println("Valid passcode!")
-	//	os.Exit(0)
-	//} else {
-	//	println("Invalid passcode!")
-	//	os.Exit(1)
-	//}
+	log.Fatal(http.ListenAndServe(":80", nil))
 }
