@@ -48,6 +48,7 @@ http://ip:8080/token?passcode=611201
 ![qr](_resources_readme/check_ok.png)
 
 - doing this by a commandline client - with some more information offering - it looks like:
+
 ![qr](_resources_readme/curl.png)
 
 checklist
