@@ -26,6 +26,30 @@ Writing PNG to qr-code.png....
 Please add your TOTP to your OTP Application now!
 ```
 
+sample interaction with the api
+---------------
+
+- Just calling the Server - the offered QR can be scanned by any authenticator app - e.g. Google Authenticator app
+```
+http://ip:8080/
+```
+![qr](_resources_readme/qr.png)
+
+- next we could ask the server if a token is valid, which is certainly not
+```
+http://ip:8080/token?passcode=123456
+```
+![qr](_resources_readme/check_notok.png)
+
+- next we could ask the server if a generated token is valid
+```
+http://ip:8080/token?passcode=611201
+```
+![qr](_resources_readme/check_ok.png)
+
+- doing this by a commandline client - with some more information offering - it looks like:
+![qr](_resources_readme/curl.png)
+
 checklist
 ---------------
 basics
