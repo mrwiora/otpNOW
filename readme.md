@@ -6,7 +6,7 @@ One Time Passwords?
 One Time Passwords (OTPs) are a mechanism to improve security over passwords alone. They provide a second factor of authentication against the first factor - which in most cases is some sort of password. 
 While the password is static - and therefore vulnerable to be recorded or stolen, an OTP is each time a new one and can not be used twice (ONE time password :) )
 There are basically two types of OTPs - HOTP (https://www.ietf.org/rfc/rfc4226.txt), which are counter-based and TOTP (https://tools.ietf.org/html/rfc6238), which are time-based.
-The idea is that a server knows a secret and the user has a device that knows the secret too - while the OTP that is provided is calculated out of that shared secret.
+The idea is that a server knows a secret and the user has a device that knows the secret too - while the OTP that is provided and exchanged is calculated out of that shared secret.
 
 otpNOW?
 ---------------
