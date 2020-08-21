@@ -56,7 +56,7 @@ sample interaction with the api
 Feel free to access the API - the service is available up & running. Of course this server is only set up with the exemplary account, but for basic interaction with the API fair enough :)
 Due to server restarts the Key and therefore the offered QR code might change from time to time. Take care of this when trying to validate a token against the API.
 
-- Just calling the Server - the offered QR can be scanned by any authenticator app - e.g. Google Authenticator app
+- Just calling the Server - the offered QR can be scanned by any authenticator app - e.g. Google or Microsoft Authenticator
 ```
 http://54.74.185.110:8080/
 ```
