@@ -96,4 +96,4 @@ nice2have
 
 motivation
 ---------------
-- software that is able to handle such OTP verifications is either a closed ecosystem and used by the large enterprises or seriously enterprise prised - in each case nothing you want to have when talking about security.
+- software that is able to handle such OTP verifications is either a closed ecosystem and used by the large enterprises or seriously enterprise priced - in each case nothing you want to have when talking about security.
