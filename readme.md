@@ -21,6 +21,10 @@ otpNOW provides such a layer as a rest-service - which provides the connecting-s
 
 otpNOW uses the otp methods of the pquerna otp project, which is Apache 2 licensed too - great work btw!
 
+supported integrations
+---------------
+- freeradius (exemplary setup guide)
+
 requirements and getting started
 ---------------
 
