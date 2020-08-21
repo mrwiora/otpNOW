@@ -58,19 +58,19 @@ Due to server restarts the Key and therefore the offered QR code might change fr
 
 - Just calling the Server - the offered QR can be scanned by any authenticator app - e.g. Google Authenticator app
 ```
-http://ip:8080/
+http://54.74.185.110:8080/
 ```
 ![qr](_resources_readme/qr.png)
 
 - next we could ask the server if a token is valid, which is certainly not
 ```
-http://ip:8080/token?passcode=123456
+http://54.74.185.110:8080/token?passcode=123456
 ```
 ![qr](_resources_readme/check_notok.png)
 
 - next we could ask the server if a generated token is valid
 ```
-http://ip:8080/token?passcode=611201
+http://54.74.185.110:8080/token?passcode=611201
 ```
 ![qr](_resources_readme/check_ok.png)
 
