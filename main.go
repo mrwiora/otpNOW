@@ -119,12 +119,12 @@ func main() {
 		// displaying image
 		// thanks https://www.sanarias.com/blog/1214PlayingwithimagesinHTTPresponseingolang
 		fmt.Printf("httpserverHandler : serving QR to %v\n", ip)
+		w.WriteHeader(200)
 		w.Header().Set("Content-Type", "image/jpeg")
 		w.Header().Set("Content-Length", strconv.Itoa(len(qr.Bytes())))
 		if _, err := w.Write(qr.Bytes()); err != nil {
 			log.Println("unable to write image.")
 		}
-		w.WriteHeader(200)
 	}
 
 	httptotpHandler := func(w http.ResponseWriter, r *http.Request) {
