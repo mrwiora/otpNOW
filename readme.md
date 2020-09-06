@@ -30,7 +30,6 @@ requirements and getting started
 
 * compile yourself (requirement: install go (minimum 1.15.x) as described here https://golang.org/doc/install)
 ```
-go get github.com/pquerna/otp
 go get github.com/mwiora/otpNOW/
 cd $GOPATH/src/github.com/mwiora/otpNOW/
 go build
